@@ -6,6 +6,11 @@ const jwt = require("jsonwebtoken");
 const User = sequelize.define(
   "User",
   {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: Sequelize.UUIDV4,
+      primaryKey: true,
+    },
     fullName: {
       type: DataTypes.STRING,
       allowNull: {
@@ -15,6 +20,9 @@ const User = sequelize.define(
     },
     email: {
       type: DataTypes.STRING,
+      unique: {
+        msg: "Email already exists",
+      },
       allowNull: {
         args: false,
         msg: "Email is required.",
@@ -60,7 +68,7 @@ const User = sequelize.define(
       defaultValue: "basic",
       validate: {
         isIn: {
-          args: [["admin", "moderator","mentor", "basic"]],
+          args: [["admin", "moderator", "mentor", "basic"]],
           msg: "Role must be one of: admin, moderator, mentor, basic",
         },
       },
