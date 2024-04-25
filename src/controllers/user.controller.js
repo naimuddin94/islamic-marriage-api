@@ -1,16 +1,6 @@
 const User = require("../model/user.model");
 const { ApiError, ApiResponse, asyncHandler } = require("../utils");
-
-function emptyValidator(body, fieldList) {
-  const errors = [];
-  fieldList.forEach((key) => {
-    if (!body[key]) {
-      errors.push(`${key} is required`);
-    }
-  });
-
-  return errors;
-}
+const { emptyValidator } = require("../lib/validators");
 
 // create a new user
 const registerUser = asyncHandler(async (req, res) => {
