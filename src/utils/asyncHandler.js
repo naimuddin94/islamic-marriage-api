@@ -4,14 +4,12 @@ const asyncHandler = (requestHandler) => {
   };
 };
 
-export { asyncHandler };
-    
-    
+module.exports = { asyncHandler };
 
 // old functional concept
-    
+
 // function asyncHandler(requestHandler) {
-//     return function (req, res, next) { 
+//     return function (req, res, next) {
 //         Promise.resolve(requestHandler(req, res, next)).catch(err =>next(err));
 //     }
 // }
