@@ -121,7 +121,7 @@ const registerUserByAdmin = asyncHandler(async (req, res) => {
     return res.status(201).json(new ApiResponse(201, createdUser, 'Registration successfully'));
 });
 
-// user authentication method
+// user authentication functionality
 const login = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
 
@@ -162,9 +162,23 @@ const login = asyncHandler(async (req, res) => {
         );
 });
 
-// logout method
+// user logout functionality
 const logout = asyncHandler(async (req, res) => {
+  // find the user by id which from verify token
+  const user = await User.findByPk(req.user.id);
 
+  if (!user) {
+    throw new ApiError(404, 'User not found');
+  }
+
+  // update the user record to remove the refreshToken field
+  await user.update({ refreshToken: null });
+
+  return res
+    .status(200)
+    .clearCookie('accessToken', options)
+    .clearCookie('refreshToken', options)
+    .json(new ApiResponse(200, {}, 'Logout successfully'));
 });
 
 module.exports = { registerUser, registerUserByAdmin, login, logout };
