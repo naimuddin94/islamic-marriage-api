@@ -1,6 +1,7 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable object-curly-newline */
-const bcrypt = require('bcrypt');
+
+// dependencies
 const jwt = require('jsonwebtoken');
 const User = require('../models/user.model');
 const { ApiError, ApiResponse, asyncHandler } = require('../utils');
