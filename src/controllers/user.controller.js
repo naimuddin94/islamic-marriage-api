@@ -5,7 +5,7 @@
 const jwt = require('jsonwebtoken');
 const User = require('../models/user.model');
 const { ApiError, ApiResponse, asyncHandler } = require('../utils');
-const { emptyValidator } = require('../lib/validators');
+const { emptyValidator, trimObject } = require('../lib/validators');
 const { options } = require('../lib');
 
 // utility functions
@@ -26,7 +26,7 @@ const generateAccessTokenAndRefreshToken = async (userId) => {
 
 // create a new user
 const registerUser = asyncHandler(async (req, res) => {
-    const { fullName, email, mobileNumber, password, gender } = req.body;
+    const { fullName, email, mobileNumber, password, gender } = trimObject(req.body);
 
     const errors = emptyValidator(req.body, [
         'fullName',
@@ -75,7 +75,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
 // create a new user by admin with role
 const registerUserByAdmin = asyncHandler(async (req, res) => {
-    const { fullName, email, mobileNumber, password, gender, role } = req.body;
+    const { fullName, email, mobileNumber, password, gender, role } = trimObject(req.body);
 
     const errors = emptyValidator(req.body, [
         'fullName',
@@ -124,7 +124,7 @@ const registerUserByAdmin = asyncHandler(async (req, res) => {
 
 // user authentication functionality
 const login = asyncHandler(async (req, res) => {
-    const { email, password } = req.body;
+    const { email, password } = trimObject(req.body);
 
     const errors = emptyValidator(req.body, ['email', 'password']);
 
@@ -183,7 +183,7 @@ const logout = asyncHandler(async (req, res) => {
 });
 
 // refresh user token
-const refreshToken = asyncHandler(async (req, res) => {
+const userRefreshToken = asyncHandler(async (req, res) => {
   const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken;
 
   if (!incomingRefreshToken) {
@@ -229,5 +229,5 @@ module.exports = {
   registerUserByAdmin,
   login,
   logout,
-  refreshToken,
+  userRefreshToken,
 };
