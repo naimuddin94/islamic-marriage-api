@@ -2,7 +2,7 @@
 /* eslint-disable object-curly-newline */
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const User = require('../model/user.model');
+const User = require('../models/user.model');
 const { ApiError, ApiResponse, asyncHandler } = require('../utils');
 const { emptyValidator } = require('../lib/validators');
 const { options } = require('../lib');
@@ -122,7 +122,7 @@ const registerUserByAdmin = asyncHandler(async (req, res) => {
 });
 
 // user authentication method
-const userLogin = asyncHandler(async (req, res) => {
+const login = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
 
     const errors = emptyValidator(req.body, ['email', 'password']);
@@ -162,4 +162,9 @@ const userLogin = asyncHandler(async (req, res) => {
         );
 });
 
-module.exports = { registerUser, registerUserByAdmin, userLogin };
+// logout method
+const logout = asyncHandler(async (req, res) => {
+
+});
+
+module.exports = { registerUser, registerUserByAdmin, login, logout };
