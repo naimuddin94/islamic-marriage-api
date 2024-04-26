@@ -14,11 +14,17 @@ const verifyToken = asyncHandler(async (req, res, next) => {
 
         const decodedToken = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
 
-        const user = await User.findByPk(decodedToken.id, { attributes: { exclude: ['password'] } });
+        const user = await User.findByPk(decodedToken.id, {
+          attributes: {
+            exclude: ['password', 'createdAt', 'updatedAt', 'mobileNumber', 'gender'],
+          },
+        });
 
         if (!user) {
             throw new ApiError(401, 'Invalid access token');
         }
+
+        console.log(27, user);
 
         req.user = user;
         next();
