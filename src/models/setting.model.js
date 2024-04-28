@@ -18,6 +18,12 @@ const Settings = sequelize.define('Settings', {
   smsApi: {
     type: DataTypes.STRING,
   },
+  smsApiKey: {
+    type: DataTypes.STRING,
+  },
+  smsSenderId: {
+    type: DataTypes.STRING,
+  },
   adminEmailAddress: {
     type: DataTypes.STRING,
   },
