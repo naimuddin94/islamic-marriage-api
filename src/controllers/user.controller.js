@@ -62,6 +62,11 @@ const registerUser = asyncHandler(async (req, res) => {
   const otpExpiry = new Date();
   otpExpiry.setMinutes(otpExpiry.getMinutes() + 3);
 
+  const message = `Your Islamic Marriage verify OTP is:
+                      ${otp}`;
+
+  await sendSMS(message, mobileNumber);
+
   const user = await User.create({
     fullName,
     email,
@@ -80,18 +85,18 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 
   // Fetch the newly created user excluding the password field
-  const createdUser = await User.findOne({
-    where: { id: user.id },
-    attributes: { exclude: ['password'] }, // Exclude the password field
-  });
+  // const createdUser = await User.findOne({
+  //   where: { id: user.id },
+  //   attributes: { exclude: ['password'] }, // Exclude the password field
+  // });
 
-  if (!createdUser) {
-    throw new ApiError(500, 'Something went wrong while registering the user');
-  }
+  // if (!createdUser) {
+  //   throw new ApiError(500, 'Something went wrong while registering the user');
+  // }
 
   return res
     .status(201)
-    .json(new ApiResponse(201, createdUser, 'Registration successfully'));
+    .json(new ApiResponse(201, {}, 'OTP send on mobile successfully'));
 });
 
 // create a new user by admin with role
@@ -113,34 +118,34 @@ const registerUserByAdmin = asyncHandler(async (req, res) => {
     throw new ApiError(400, errors[0], errors);
   }
 
-   const existsUser = await User.findOne({
-     where: {
-       [Op.or]: [{ email: email.toLowerCase() }, { mobileNumber }],
-     },
-   });
+  const existsUser = await User.findOne({
+    where: {
+      [Op.or]: [{ email: email.toLowerCase() }, { mobileNumber }],
+    },
+  });
 
-   if (existsUser) {
-     throw new ApiError(400, 'Email or mobile already exists');
-   }
-   const otp = otpGenerator.generate(6, {
-     upperCaseAlphabets: false,
-     specialChars: false,
-     lowerCaseAlphabets: false,
-   });
+  if (existsUser) {
+    throw new ApiError(400, 'Email or mobile already exists');
+  }
+  const otp = otpGenerator.generate(6, {
+    upperCaseAlphabets: false,
+    specialChars: false,
+    lowerCaseAlphabets: false,
+  });
 
-   const otpExpiry = new Date();
-   otpExpiry.setMinutes(otpExpiry.getMinutes() + 3);
+  const otpExpiry = new Date();
+  otpExpiry.setMinutes(otpExpiry.getMinutes() + 3);
 
-   const user = await User.create({
-     fullName,
-     email,
-     mobileNumber,
-     password,
-     gender,
-     otp,
-     otpExpiry,
-     role,
-   });
+  const user = await User.create({
+    fullName,
+    email,
+    mobileNumber,
+    password,
+    gender,
+    otp,
+    otpExpiry,
+    role,
+  });
 
   if (!user) {
     throw new ApiError(
@@ -180,6 +185,10 @@ const login = asyncHandler(async (req, res) => {
 
   if (!existsUser) {
     throw new ApiError(404, 'User not found');
+  }
+
+  if (!existsUser.isVerified) {
+    throw new ApiError(400, 'Mobile number not verified');
   }
 
   const isValidPassword = existsUser.isPasswordCorrect(password);
@@ -280,17 +289,20 @@ const sendOTP = asyncHandler(async (req, res) => {
 
   const user = await User.findOne({ where: { mobileNumber } });
 
+  if (!user) {
+    throw new ApiError(404, 'User not found');
+  }
+
   const otp = otpGenerator.generate(6, {
     upperCaseAlphabets: false,
     specialChars: false,
     lowerCaseAlphabets: false,
   });
 
-  const message = `<p>your otp is: ${otp}</p>`;
+  const message = `Your Islamic Marriage verify OTP is:
+                      ${otp}`;
 
-  const dataFromElitbuzz = await sendSMS(message, mobileNumber);
-
-  console.log('from controllers 293: ', dataFromElitbuzz);
+  await sendSMS(message, mobileNumber);
 
   const otpExpiry = new Date();
   otpExpiry.setMinutes(otpExpiry.getMinutes() + 3);
@@ -300,7 +312,54 @@ const sendOTP = asyncHandler(async (req, res) => {
 
   await user.save({ validate: false });
 
-  return res.status(200).json(new ApiResponse(200, {}, 'Send otp successfully'));
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, 'Send otp successfully'));
+});
+
+// verify account with OTP
+const verifyOTP = asyncHandler(async (req, res) => {
+  const { mobileNumber, otp } = trimObject(req.body);
+
+   const errors = emptyValidator(req.body, ['mobileNumber', 'otp']);
+
+   if (errors.length) {
+     throw new ApiError(400, errors.join(', '), errors);
+   }
+
+  const user = await User.findOne({ where: { mobileNumber } });
+
+  if (!user) {
+    throw new ApiError(404, 'User not found');
+  }
+
+  const isExpiredOTP = user?.otpExpiry < Date.now();
+
+  if (isExpiredOTP) {
+    throw new ApiError(400, 'OTP expired');
+  }
+
+  if (user?.otp !== otp) {
+    throw new ApiError(400, 'Invalid OTP');
+  }
+
+  user.isVerified = true;
+  user.otp = null;
+  user.otpExpiry = null;
+
+  await user.save({ validate: false });
+
+  const response = {
+    id: user.id,
+    fullName: user.fullName,
+    email: user.email,
+    mobileNumber: user.mobileNumber,
+    isVerified: user.isVerified,
+  };
+
+  return res
+    .status(201)
+    .json(new ApiResponse(201, response, 'Account registered successfully'));
 });
 
 module.exports = {
@@ -310,4 +369,5 @@ module.exports = {
   logout,
   userRefreshToken,
   sendOTP,
+  verifyOTP,
 };
