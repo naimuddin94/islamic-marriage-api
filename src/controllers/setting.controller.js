@@ -1,6 +1,6 @@
 const Settings = require('../models/setting.model');
 const { asyncHandler, ApiError, ApiResponse } = require('../utils');
-const { emptyValidator } = require('../lib/validators');
+const { emptyValidator, trimObject } = require('../lib/validators');
 
 // update settings
 const updateSettings = asyncHandler(async (req, res) => {
@@ -10,14 +10,18 @@ const updateSettings = asyncHandler(async (req, res) => {
         payPalClientKey,
         zellePayNumber,
         smsApi,
+        smsApiKey,
+        smsSenderId,
         adminEmailAddress,
         successfulMarriage,
         youtubeEmbedVideoLink,
         logo,
-    } = req.body;
+    } = trimObject(req.body);
 
     const errors = emptyValidator(req.body, [
         'smsApi',
+        'smsApiKey',
+        'smsSenderId',
         'adminEmailAddress',
         'successfulMarriage',
         'youtubeEmbedVideoLink',
@@ -39,6 +43,9 @@ const updateSettings = asyncHandler(async (req, res) => {
             payPalClientKey,
             zellePayNumber,
             smsApi,
+
+            smsApiKey,
+            smsSenderId,
             adminEmailAddress,
             successfulMarriage,
             youtubeEmbedVideoLink,
@@ -51,6 +58,8 @@ const updateSettings = asyncHandler(async (req, res) => {
         setting.payPalClientKey = payPalClientKey;
         setting.zellePayNumber = zellePayNumber;
         setting.smsApi = smsApi;
+        setting.smsApiKey = smsApiKey;
+        setting.smsSenderId = smsSenderId;
         setting.adminEmailAddress = adminEmailAddress;
         setting.successfulMarriage = successfulMarriage;
         setting.youtubeEmbedVideoLink = youtubeEmbedVideoLink;
