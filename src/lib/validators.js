@@ -3,7 +3,7 @@
 function emptyValidator(body, fieldList) {
     const errors = [];
     fieldList.forEach((key) => {
-        if (!body[key].trim()) {
+        if (!body[key]?.trim()) {
             errors.push(`${key} is required`);
         }
     });
@@ -34,7 +34,7 @@ function trimObject(obj) {
             trimmedObject[key] = trimObject(value);
             // Trim string values
             if (typeof trimmedObject[key] === 'string') {
-                trimmedObject[key] = trimmedObject[key].trim();
+                trimmedObject[key] = trimmedObject[key]?.trim();
             }
         }
     }
