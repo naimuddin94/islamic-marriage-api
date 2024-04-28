@@ -355,6 +355,7 @@ const verifyOTP = asyncHandler(async (req, res) => {
     email: user.email,
     mobileNumber: user.mobileNumber,
     isVerified: user.isVerified,
+    gender: user.gender,
   };
 
   return res
