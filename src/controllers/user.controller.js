@@ -3,6 +3,8 @@
 
 // dependencies
 const jwt = require('jsonwebtoken');
+const { Op } = require('sequelize');
+const otpGenerator = require('otp-generator');
 const User = require('../models/user.model');
 const { ApiError, ApiResponse, asyncHandler } = require('../utils');
 const { emptyValidator, trimObject } = require('../lib/validators');
@@ -10,157 +12,199 @@ const { options } = require('../lib');
 
 // utility functions
 const generateAccessTokenAndRefreshToken = async (userId) => {
-    try {
-        const user = await User.findByPk(userId);
-        const accessToken = user.generateAccessToken();
-        const refreshToken = user.generateRefreshToken();
+  try {
+    const user = await User.findByPk(userId);
+    const accessToken = user.generateAccessToken();
+    const refreshToken = user.generateRefreshToken();
 
-        user.refreshToken = refreshToken;
-        await user.save({ validate: false });
+    user.refreshToken = refreshToken;
+    await user.save({ validate: false });
 
-        return { accessToken, refreshToken };
-    } catch (error) {
-        throw new ApiError(500, 'Something went wrong generating tokens');
-    }
+    return { accessToken, refreshToken };
+  } catch (error) {
+    throw new ApiError(500, 'Something went wrong generating tokens');
+  }
 };
 
 // create a new user
 const registerUser = asyncHandler(async (req, res) => {
-    const { fullName, email, mobileNumber, password, gender } = trimObject(req.body);
+  const { fullName, email, mobileNumber, password, gender } = trimObject(
+    req.body,
+  );
 
-    const errors = emptyValidator(req.body, [
-        'fullName',
-        'email',
-        'mobileNumber',
-        'password',
-        'gender',
-    ]);
+  const errors = emptyValidator(req.body, [
+    'fullName',
+    'email',
+    'mobileNumber',
+    'password',
+    'gender',
+  ]);
 
-    if (errors.length > 0) {
-        throw new ApiError(400, errors[0], errors);
-    }
+  if (errors.length) {
+    throw new ApiError(400, errors[0], errors);
+  }
 
-    const existsUser = await User.findOne({ where: { email: email.toLowerCase() } });
+  const existsUser = await User.findOne({
+    where: {
+      [Op.or]: [{ email: email.toLowerCase() }, { mobileNumber }],
+    },
+  });
 
-    console.log(43, existsUser);
+  if (existsUser) {
+    throw new ApiError(400, 'Email or mobile already exists');
+  }
+  const otp = otpGenerator.generate(6, {
+    upperCaseAlphabets: false,
+    specialChars: false,
+    lowerCaseAlphabets: false,
+  });
 
-    if (existsUser) {
-        throw new ApiError(400, 'Email already exists');
-    }
+  const otpExpiry = new Date();
+  otpExpiry.setMinutes(otpExpiry.getMinutes() + 3);
 
-    const user = await User.create({
-        fullName,
-        email,
-        mobileNumber,
-        password,
-        gender,
-    });
+  const user = await User.create({
+    fullName,
+    email,
+    mobileNumber,
+    password,
+    gender,
+    otp,
+    otpExpiry,
+  });
 
-    if (!user) {
-        throw new ApiError(500, 'Something went wrong creating the user to database');
-    }
+  if (!user) {
+    throw new ApiError(
+      500,
+      'Something went wrong creating the user to database',
+    );
+  }
 
-    // Fetch the newly created user excluding the password field
-    const createdUser = await User.findOne({
-        where: { id: user.id },
-        attributes: { exclude: ['password'] }, // Exclude the password field
-    });
+  // Fetch the newly created user excluding the password field
+  const createdUser = await User.findOne({
+    where: { id: user.id },
+    attributes: { exclude: ['password'] }, // Exclude the password field
+  });
 
-    if (!createdUser) {
-        throw new ApiError(500, 'Something went wrong while registering the user');
-    }
+  if (!createdUser) {
+    throw new ApiError(500, 'Something went wrong while registering the user');
+  }
 
-    return res.status(201).json(new ApiResponse(201, createdUser, 'Registration successfully'));
+  return res
+    .status(201)
+    .json(new ApiResponse(201, createdUser, 'Registration successfully'));
 });
 
 // create a new user by admin with role
 const registerUserByAdmin = asyncHandler(async (req, res) => {
-    const { fullName, email, mobileNumber, password, gender, role } = trimObject(req.body);
+  const { fullName, email, mobileNumber, password, gender, role } = trimObject(
+    req.body,
+  );
 
-    const errors = emptyValidator(req.body, [
-        'fullName',
-        'email',
-        'mobileNumber',
-        'password',
-        'gender',
-        'role',
-    ]);
+  const errors = emptyValidator(req.body, [
+    'fullName',
+    'email',
+    'mobileNumber',
+    'password',
+    'gender',
+    'role',
+  ]);
 
-    if (errors.length > 0) {
-        throw new ApiError(400, errors[0], errors);
-    }
+  if (errors.length > 0) {
+    throw new ApiError(400, errors[0], errors);
+  }
 
-    const existsUser = await User.findOne({ email });
+   const existsUser = await User.findOne({
+     where: {
+       [Op.or]: [{ email: email.toLowerCase() }, { mobileNumber }],
+     },
+   });
 
-    if (existsUser) {
-        throw new ApiError(400, 'Email already exists');
-    }
+   if (existsUser) {
+     throw new ApiError(400, 'Email or mobile already exists');
+   }
+   const otp = otpGenerator.generate(6, {
+     upperCaseAlphabets: false,
+     specialChars: false,
+     lowerCaseAlphabets: false,
+   });
 
-    const user = await User.create({
-        fullName,
-        email,
-        mobileNumber,
-        password,
-        gender,
-        role,
-    });
+   const otpExpiry = new Date();
+   otpExpiry.setMinutes(otpExpiry.getMinutes() + 3);
 
-    if (!user) {
-        throw new ApiError(500, 'Something went wrong creating the user to database');
-    }
+   const user = await User.create({
+     fullName,
+     email,
+     mobileNumber,
+     password,
+     gender,
+     otp,
+     otpExpiry,
+     role,
+   });
 
-    // Fetch the newly created user excluding the password field
-    const createdUser = await User.findOne({
-        where: { id: user.id },
-        attributes: { exclude: ['password'] }, // Exclude the password field
-    });
+  if (!user) {
+    throw new ApiError(
+      500,
+      'Something went wrong creating the user to database',
+    );
+  }
 
-    if (!createdUser) {
-        throw new ApiError(500, 'Something went wrong while registering the user');
-    }
+  // Fetch the newly created user excluding the password field
+  const createdUser = await User.findOne({
+    where: { id: user.id },
+    attributes: { exclude: ['password'] }, // Exclude the password field
+  });
 
-    return res.status(201).json(new ApiResponse(201, createdUser, 'Registration successfully'));
+  if (!createdUser) {
+    throw new ApiError(500, 'Something went wrong while registering the user');
+  }
+
+  return res
+    .status(201)
+    .json(new ApiResponse(201, createdUser, 'Registration successfully'));
 });
 
 // user authentication functionality
 const login = asyncHandler(async (req, res) => {
-    const { email, password } = trimObject(req.body);
+  const { email, password } = trimObject(req.body);
 
-    const errors = emptyValidator(req.body, ['email', 'password']);
+  const errors = emptyValidator(req.body, ['email', 'password']);
 
-    if (errors.length > 0) {
-        throw new ApiError(400, errors[0], errors);
-    }
+  if (errors.length > 0) {
+    throw new ApiError(400, errors[0], errors);
+  }
 
-    const existsUser = await User.findOne({ where: { email: email.toLowerCase() } });
+  const existsUser = await User.findOne({
+    where: { email: email.toLowerCase() },
+  });
 
-    if (!existsUser) {
-        throw new ApiError(404, 'User not found');
-    }
+  if (!existsUser) {
+    throw new ApiError(404, 'User not found');
+  }
 
-    const isValidPassword = existsUser.isPasswordCorrect(password);
+  const isValidPassword = existsUser.isPasswordCorrect(password);
 
-    if (!isValidPassword) {
-        throw new ApiError(403, 'Invalid credentials');
-    }
+  if (!isValidPassword) {
+    throw new ApiError(403, 'Invalid credentials');
+  }
 
-    const { accessToken, refreshToken } = await generateAccessTokenAndRefreshToken(existsUser.id);
+  const { accessToken, refreshToken } = await generateAccessTokenAndRefreshToken(existsUser.id);
 
-    const user = existsUser.toJSON();
+  const user = existsUser.toJSON();
 
-    delete user.password;
+  delete user.password;
 
-    return res
-        .status(200)
-        .cookie('accessToken', accessToken, options)
-        .cookie('refreshToken', refreshToken, options)
-        .json(
-            new ApiResponse(
-                201,
-                { user, accessToken, refreshToken },
-                'Login successfully',
-            ),
-        );
+  return res
+    .status(200)
+    .cookie('accessToken', accessToken, options)
+    .cookie('refreshToken', refreshToken, options)
+    .json(
+      new ApiResponse(
+        201,
+        { user, accessToken, refreshToken },
+        'Login successfully',
+      ),
+    );
 });
 
 // user logout functionality
@@ -224,10 +268,40 @@ const userRefreshToken = asyncHandler(async (req, res) => {
   }
 });
 
+// send otp request
+const sendOTP = asyncHandler(async (req, res) => {
+  const { mobileNumber } = trimObject(req.body);
+
+  const errors = emptyValidator(req.body, ['mobileNumber']);
+
+  if (errors.length) {
+    throw new ApiError(400, errors.join(', '), errors);
+  }
+
+  const user = await User.findOne({ where: { mobileNumber } });
+
+  const otp = otpGenerator.generate(6, {
+    upperCaseAlphabets: false,
+    specialChars: false,
+    lowerCaseAlphabets: false,
+  });
+
+  const otpExpiry = new Date();
+  otpExpiry.setMinutes(otpExpiry.getMinutes() + 3);
+
+  user.otp = otp;
+  user.otpExpiry = otpExpiry;
+
+  await user.save({ validate: false });
+
+  return res.status(200).json(new ApiResponse(200, {}, 'Send otp successfully'));
+});
+
 module.exports = {
   registerUser,
   registerUserByAdmin,
   login,
   logout,
   userRefreshToken,
+  sendOTP,
 };
