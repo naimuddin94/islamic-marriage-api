@@ -60,6 +60,12 @@ const User = sequelize.define(
         refreshToken: {
             type: DataTypes.STRING,
         },
+        otp: {
+            type: DataTypes.STRING,
+        },
+        otpExpiry: {
+            type: DataTypes.DATE,
+        },
         isVerified: {
             type: DataTypes.BOOLEAN,
             defaultValue: false,
