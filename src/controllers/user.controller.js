@@ -6,7 +6,7 @@ const jwt = require('jsonwebtoken');
 const { Op } = require('sequelize');
 const otpGenerator = require('otp-generator');
 const User = require('../models/user.model');
-const { ApiError, ApiResponse, asyncHandler } = require('../utils');
+const { ApiError, ApiResponse, asyncHandler, sendSMS } = require('../utils');
 const { emptyValidator, trimObject } = require('../lib/validators');
 const { options } = require('../lib');
 
@@ -285,6 +285,12 @@ const sendOTP = asyncHandler(async (req, res) => {
     specialChars: false,
     lowerCaseAlphabets: false,
   });
+
+  const message = `<p>your otp is: ${otp}</p>`;
+
+  const dataFromElitbuzz = await sendSMS(message, mobileNumber);
+
+  console.log('from controllers 293: ', dataFromElitbuzz);
 
   const otpExpiry = new Date();
   otpExpiry.setMinutes(otpExpiry.getMinutes() + 3);
