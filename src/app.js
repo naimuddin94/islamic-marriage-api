@@ -14,6 +14,7 @@ const cookieParser = require('cookie-parser');
 const { globalErrorHandler } = require('./lib/globalErrorHandler');
 const { userRouter } = require('./routes/user.route');
 const { authRouter } = require('./routes/auth.route');
+const { adminRouter } = require('./routes/admin.route');
 
 const app = express();
 
@@ -30,6 +31,7 @@ app.use(cookieParser());
 // routes
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/auth', authRouter);
+app.use('/api/v1/admin', adminRouter);
 
 // testing route
 app.get('/', (req, res) => {
