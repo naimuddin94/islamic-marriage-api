@@ -62,8 +62,7 @@ const registerUser = asyncHandler(async (req, res) => {
   const otpExpiry = new Date();
   otpExpiry.setMinutes(otpExpiry.getMinutes() + 1);
 
-  const message = `Your Islamic Marriage verify OTP is:
-                      ${otp}`;
+  const message = `Your Islamic Marriage verify OTP is: ${otp}`;
 
   await sendSMS(message, mobileNumber);
 
@@ -156,7 +155,7 @@ const login = asyncHandler(async (req, res) => {
 
   const errors = emptyValidator(req.body, ['password', 'identity']);
 
-  if (errors.length > 0) {
+  if (errors.length) {
     throw new ApiError(400, errors.join(', '), errors);
   }
 
@@ -282,8 +281,7 @@ const sendOTP = asyncHandler(async (req, res) => {
     lowerCaseAlphabets: false,
   });
 
-  const message = `Your Islamic Marriage verify OTP is:
-                      ${otp}`;
+  const message = `Your Islamic Marriage verify OTP is: ${otp}`;
 
   await sendSMS(message, mobileNumber);
 
@@ -374,6 +372,127 @@ const changePassword = asyncHandler(async (req, res) => {
   return res.status(200).json(new ApiResponse(200, {}, 'Password changed successfully'));
 });
 
+// change fullname
+const changeFullName = asyncHandler(async (req, res) => {
+  const { fullName } = trimObject(req.body);
+
+  console.log(fullName);
+
+   const errors = emptyValidator(req.body, ['fullName']);
+
+   if (errors.length) {
+     throw new ApiError(400, errors.join(', '), errors);
+   }
+
+  const user = await User.findByPk(req.user?.id);
+
+  if (!user) {
+    throw new ApiError(404, 'User not found');
+  }
+
+  user.fullName = fullName;
+  await user.save();
+
+  const response = {
+    id: user.id,
+    fullName: user.fullName,
+    email: user.email,
+    mobileNumber: user.mobileNumber,
+    gender: user.gender,
+  };
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, response, 'User fullname changed successfully'));
+});
+
+// forget password
+const forgetPassword = asyncHandler(async (req, res) => {
+  const { identity } = trimObject(req.body);
+
+  const errors = emptyValidator(req.body, ['identity']);
+
+  if (errors.length) {
+    throw new ApiError(400, errors.join(', '), errors);
+  }
+
+   const user = await User.findOne({
+     where: {
+       [Op.or]: [{ email: identity.toLowerCase() }, { mobileNumber: identity }],
+     },
+   });
+
+   if (!user) {
+     throw new ApiError(404, 'User not found');
+   }
+
+  const otp = otpGenerator.generate(6, {
+    upperCaseAlphabets: false,
+    specialChars: false,
+    lowerCaseAlphabets: false,
+  });
+
+  const otpExpiry = new Date();
+  otpExpiry.setMinutes(otpExpiry.getMinutes() + 1);
+
+  const message = `Your Islamic Marriage verify OTP is: ${otp}`;
+
+  await sendSMS(message, user?.mobileNumber);
+
+  user.otp = otp;
+  user.otpExpiry = otpExpiry;
+
+  await user.save({ validate: false });
+
+  return res.status(200).json(new ApiResponse(200, {}, 'OTP send successfully'));
+});
+
+const verifyOTPForResetPassword = asyncHandler(async (req, res) => {
+  const { otp, newPassword, mobileNumber } = trimObject(req.body);
+
+  const errors = emptyValidator(req.body, ['otp', 'newPassword', 'mobileNumber']);
+
+  if (errors.length) {
+    throw new ApiError(400, errors.join(', '), errors);
+  }
+
+  const user = await User.findOne({ where: { mobileNumber } });
+
+  console.log(461, user);
+
+  if (!user) {
+    throw new ApiError(404, 'User not found');
+  }
+
+  const isExpiredOTP = user?.otpExpiry < Date.now();
+
+  if (isExpiredOTP) {
+    throw new ApiError(400, 'OTP expired');
+  }
+
+  if (user?.otp !== otp) {
+    throw new ApiError(400, 'Invalid OTP');
+  }
+
+  user.password = newPassword;
+  user.otp = null;
+  user.otpExpiry = null;
+
+  await user.save();
+
+  const response = {
+    id: user.id,
+    fullName: user.fullName,
+    email: user.email,
+    mobileNumber: user.mobileNumber,
+    gender: user.gender,
+  };
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, response, 'Password changed successfully'));
+});
+
 module.exports = {
   registerUser,
   registerUserByAdmin,
@@ -383,4 +502,7 @@ module.exports = {
   sendOTP,
   verifyOTP,
   changePassword,
+  changeFullName,
+  forgetPassword,
+  verifyOTPForResetPassword,
 };
