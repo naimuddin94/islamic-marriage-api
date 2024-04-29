@@ -41,7 +41,7 @@ const registerUser = asyncHandler(async (req, res) => {
   ]);
 
   if (errors.length) {
-    throw new ApiError(400, errors[0], errors);
+    throw new ApiError(400, errors.join(', '), errors);
   }
 
   const existsUser = await User.findOne({
@@ -104,7 +104,7 @@ const registerUserByAdmin = asyncHandler(async (req, res) => {
   ]);
 
   if (errors.length > 0) {
-    throw new ApiError(400, errors[0], errors);
+    throw new ApiError(400, errors.join(', '), errors);
   }
 
   const existsUser = await User.findOne({
@@ -457,8 +457,6 @@ const verifyOTPForResetPassword = asyncHandler(async (req, res) => {
   }
 
   const user = await User.findOne({ where: { mobileNumber } });
-
-  console.log(461, user);
 
   if (!user) {
     throw new ApiError(404, 'User not found');
