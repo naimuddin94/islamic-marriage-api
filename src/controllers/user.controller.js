@@ -60,7 +60,7 @@ const registerUser = asyncHandler(async (req, res) => {
   });
 
   const otpExpiry = new Date();
-  otpExpiry.setMinutes(otpExpiry.getMinutes() + 3);
+  otpExpiry.setMinutes(otpExpiry.getMinutes() + 1);
 
   const message = `Your Islamic Marriage verify OTP is:
                       ${otp}`;
@@ -84,19 +84,9 @@ const registerUser = asyncHandler(async (req, res) => {
     );
   }
 
-  // Fetch the newly created user excluding the password field
-  // const createdUser = await User.findOne({
-  //   where: { id: user.id },
-  //   attributes: { exclude: ['password'] }, // Exclude the password field
-  // });
-
-  // if (!createdUser) {
-  //   throw new ApiError(500, 'Something went wrong while registering the user');
-  // }
-
   return res
     .status(201)
-    .json(new ApiResponse(201, {}, 'OTP send on mobile successfully'));
+    .json(new ApiResponse(201, mobileNumber, 'OTP send on mobile successfully'));
 });
 
 // create a new user by admin with role
@@ -127,14 +117,6 @@ const registerUserByAdmin = asyncHandler(async (req, res) => {
   if (existsUser) {
     throw new ApiError(400, 'Email or mobile already exists');
   }
-  const otp = otpGenerator.generate(6, {
-    upperCaseAlphabets: false,
-    specialChars: false,
-    lowerCaseAlphabets: false,
-  });
-
-  const otpExpiry = new Date();
-  otpExpiry.setMinutes(otpExpiry.getMinutes() + 3);
 
   const user = await User.create({
     fullName,
@@ -142,9 +124,8 @@ const registerUserByAdmin = asyncHandler(async (req, res) => {
     mobileNumber,
     password,
     gender,
-    otp,
-    otpExpiry,
     role,
+    isVerified: true,
   });
 
   if (!user) {
@@ -171,16 +152,18 @@ const registerUserByAdmin = asyncHandler(async (req, res) => {
 
 // user authentication functionality
 const login = asyncHandler(async (req, res) => {
-  const { email, password } = trimObject(req.body);
+  const { identity, password } = trimObject(req.body);
 
-  const errors = emptyValidator(req.body, ['email', 'password']);
+  const errors = emptyValidator(req.body, ['password', 'identity']);
 
   if (errors.length > 0) {
-    throw new ApiError(400, errors[0], errors);
+    throw new ApiError(400, errors.join(', '), errors);
   }
 
   const existsUser = await User.findOne({
-    where: { email: email.toLowerCase() },
+    where: {
+      [Op.or]: [{ email: identity.toLowerCase() }, { mobileNumber: identity }],
+    },
   });
 
   if (!existsUser) {
@@ -305,7 +288,7 @@ const sendOTP = asyncHandler(async (req, res) => {
   await sendSMS(message, mobileNumber);
 
   const otpExpiry = new Date();
-  otpExpiry.setMinutes(otpExpiry.getMinutes() + 3);
+  otpExpiry.setMinutes(otpExpiry.getMinutes() + 1);
 
   user.otp = otp;
   user.otpExpiry = otpExpiry;
@@ -363,6 +346,34 @@ const verifyOTP = asyncHandler(async (req, res) => {
     .json(new ApiResponse(201, response, 'Account registered successfully'));
 });
 
+// change password
+const changePassword = asyncHandler(async (req, res) => {
+  const { oldPassword, newPassword } = trimObject(req.body);
+
+   const errors = emptyValidator(req.body, ['oldPassword', 'newPassword']);
+
+   if (errors.length) {
+     throw new ApiError(400, errors.join(', '), errors);
+   }
+
+  const user = await User.findByPk(req.user?.id);
+
+  if (!user) {
+    throw new ApiError(404, 'User not found');
+  }
+
+  const isValidPassword = user.isPasswordCorrect(oldPassword);
+
+  if (!isValidPassword) {
+    throw new ApiError(403, 'Invalid credentials');
+  }
+
+  user.password = newPassword;
+  await user.save();
+
+  return res.status(200).json(new ApiResponse(200, {}, 'Password changed successfully'));
+});
+
 module.exports = {
   registerUser,
   registerUserByAdmin,
@@ -371,4 +382,5 @@ module.exports = {
   userRefreshToken,
   sendOTP,
   verifyOTP,
+  changePassword,
 };
