@@ -1,8 +1,9 @@
+/* eslint-disable prettier/prettier */
 const PersonalInfo = require('../models/personalInfo.model');
 const { ApiError, ApiResponse, asyncHandler } = require('../utils');
 const { emptyValidator, trimObject } = require('../lib/validators');
 
-// create a new PersonalInformation
+// Create a new PersonalInformation
 const createPersonalInfo = asyncHandler(async (req, res) => {
     const {
         typeOfBiodata,
@@ -39,7 +40,7 @@ const createPersonalInfo = asyncHandler(async (req, res) => {
         weight,
         bloodGroup,
         nationality,
-        userId: req.user?.id,
+        UserId: req.user?.id,
     });
 
     if (!personalInfo) {
@@ -51,4 +52,61 @@ const createPersonalInfo = asyncHandler(async (req, res) => {
         .json(new ApiResponse(201, personalInfo, 'Personal Information saved successfully'));
 });
 
-module.exports = { createPersonalInfo };
+// Update PersonalInformation
+const updatePersonalInfo = asyncHandler(async (req, res) => {
+    const personalInfoId = req.params.id;
+    const {
+        typeOfBiodata,
+        maritalStatus,
+        dateOfBirth,
+        height,
+        complexion,
+        weight,
+        bloodGroup,
+        nationality,
+    } = trimObject(req.body);
+
+    const errors = emptyValidator(req.body, [
+        'typeOfBiodata',
+        'maritalStatus',
+        'dateOfBirth',
+        'height',
+        'complexion',
+        'weight',
+        'bloodGroup',
+        'nationality',
+    ]);
+
+    if (errors.length) {
+        throw new ApiError(400, errors.join(', '), errors);
+    }
+
+    const personalInfo = await PersonalInfo.findByPk(personalInfoId);
+
+    if (!personalInfo) {
+        throw new ApiError(404, 'Personal Information not found');
+    }
+
+    // Check if the user is authorized to update this personal information
+    if (personalInfo.UserId !== req.user.id) {
+        throw new ApiError(403, 'Unauthorized to update this personal information');
+    }
+
+    // Update personal information
+    await personalInfo.update({
+        typeOfBiodata,
+        maritalStatus,
+        dateOfBirth,
+        height,
+        complexion,
+        weight,
+        bloodGroup,
+        nationality,
+    });
+
+    return res.json(
+        new ApiResponse(200, personalInfo, 'Personal Information updated successfully'),
+    );
+});
+
+module.exports = { createPersonalInfo, updatePersonalInfo };
