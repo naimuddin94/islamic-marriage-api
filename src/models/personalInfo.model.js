@@ -1,41 +1,53 @@
+/* eslint-disable prettier/prettier */
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../db');
 const User = require('./user.model');
 
-const PersonalInfo = sequelize.define('PersonalInformation', {
-    typeOfBiodata: {
-        type: DataTypes.STRING,
-        allowNull: false,
+const PersonalInfo = sequelize.define(
+    'PersonalInformation',
+    {
+        typeOfBiodata: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        maritalStatus: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        dateOfBirth: {
+            type: DataTypes.DATE,
+            allowNull: false,
+        },
+        height: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        complexion: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        weight: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        bloodGroup: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
+        nationality: {
+            type: DataTypes.STRING,
+            allowNull: false,
+        },
     },
-    maritalStatus: {
-        type: DataTypes.STRING,
-        allowNull: false,
+    {
+        indexes: [
+            {
+                unique: true,
+                fields: ['UserId'],
+            },
+        ],
     },
-    dateOfBirth: {
-        type: DataTypes.DATE,
-        allowNull: false,
-    },
-    height: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
-    complexion: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
-    weight: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
-    bloodGroup: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
-    nationality: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
-});
+);
 
 User.hasOne(PersonalInfo, {
     foreignKey: {
