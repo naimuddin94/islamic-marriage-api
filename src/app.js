@@ -15,6 +15,7 @@ const { globalErrorHandler } = require('./lib/globalErrorHandler');
 const { userRouter } = require('./routes/user.route');
 const { authRouter } = require('./routes/auth.route');
 const { adminRouter } = require('./routes/admin.route');
+const biodataRouter = require('./routes/biodata.route');
 
 const app = express();
 
@@ -32,6 +33,7 @@ app.use(cookieParser());
 app.use('/api/v1/users', userRouter);
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/admin', adminRouter);
+app.use('/api/v1/biodata', biodataRouter);
 
 // testing route
 app.get('/', (req, res) => {
