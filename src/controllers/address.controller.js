@@ -40,7 +40,6 @@ const createAddress = asyncHandler(async (req, res) => {
 
 // Update an existing address
 const updateAddress = asyncHandler(async (req, res) => {
-  const addressId = req.params.id;
   const {
       permanentAddress,
       isSameCurrentAddress,
@@ -57,15 +56,10 @@ const updateAddress = asyncHandler(async (req, res) => {
     throw new ApiError(400, errors.join(', '), errors);
   }
 
-  const address = await Address.findByPk(addressId);
+  const address = await Address.findOne({ where: { UserId: req.user?.id } });
 
   if (!address) {
     throw new ApiError(404, 'Address not found');
-  }
-
-  // Check if the user is authorized to update this address
-  if (address.UserId !== req.user.id) {
-    throw new ApiError(403, 'Unauthorized to update this address');
   }
 
   // Update address
