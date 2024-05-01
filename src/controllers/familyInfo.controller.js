@@ -94,6 +94,8 @@ const updateFamilyInfo = asyncHandler(async (req, res) => {
     familyReligionEnvironment,
   } = trimObject(req.body);
 
+  console.log(99, { builtin: req.href });
+
   const errors = emptyValidator(req.body, [
     'fatherName',
     'isFatherAlive',
