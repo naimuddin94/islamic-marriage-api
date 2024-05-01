@@ -57,7 +57,6 @@ const createEducation = asyncHandler(async (req, res) => {
 
 // Update an existing education record
 const updateEducation = asyncHandler(async (req, res) => {
-    const educationId = req.params.id;
     const {
         medium,
         qualification,
@@ -86,15 +85,12 @@ const updateEducation = asyncHandler(async (req, res) => {
         throw new ApiError(400, errors.join(', '), errors);
     }
 
-    const education = await Education.findByPk(educationId);
+    const education = await Education.findOne({
+        where: { UserId: req.user?.id },
+    });
 
     if (!education) {
         throw new ApiError(404, 'Education record not found');
-    }
-
-    // Check if the user is authorized to update this education record
-    if (education.UserId !== req.user?.id) {
-        throw new ApiError(403, 'Unauthorized to update this education record');
     }
 
     // Update education record
