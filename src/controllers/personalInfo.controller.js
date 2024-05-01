@@ -54,7 +54,6 @@ const createPersonalInfo = asyncHandler(async (req, res) => {
 
 // Update PersonalInformation
 const updatePersonalInfo = asyncHandler(async (req, res) => {
-    const personalInfoId = req.params.id;
     const {
         typeOfBiodata,
         maritalStatus,
@@ -81,15 +80,10 @@ const updatePersonalInfo = asyncHandler(async (req, res) => {
         throw new ApiError(400, errors.join(', '), errors);
     }
 
-    const personalInfo = await PersonalInfo.findByPk(personalInfoId);
+    const personalInfo = await PersonalInfo.findOne({ where: { UserId: req.user?.id } });
 
     if (!personalInfo) {
         throw new ApiError(404, 'Personal Information not found');
-    }
-
-    // Check if the user is authorized to update this personal information
-    if (personalInfo.UserId !== req.user.id) {
-        throw new ApiError(403, 'Unauthorized to update this personal information');
     }
 
     // Update personal information
