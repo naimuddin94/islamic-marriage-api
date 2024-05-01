@@ -19,6 +19,9 @@ const biodataRouter = require('./routes/biodata.route');
 
 const app = express();
 
+// static files
+app.use('/uploads', express.static('uploads'));
+
 // middleware
 app.use(express.json());
 app.use(
