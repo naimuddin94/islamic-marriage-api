@@ -2,6 +2,7 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../db');
 const User = require('./user.model');
+const { fiqhOption } = require('../lib');
 
 const LifeStyle = sequelize.define(
   'LifeStyleInformation',
@@ -37,6 +38,12 @@ const LifeStyle = sequelize.define(
     fiqh: {
       type: DataTypes.STRING,
       allowNull: false,
+      validate: {
+        isIn: {
+          args: [fiqhOption],
+          msg: `Fiqh must be one of : ${fiqhOption.join(',')}`,
+        },
+      },
     },
     moviesOrSongs: {
       type: DataTypes.STRING,

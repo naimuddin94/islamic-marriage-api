@@ -2,6 +2,7 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../db');
 const User = require('./user.model');
+const { aliveOption } = require('../lib');
 
 const FamilyInfo = sequelize.define(
   'FamilyInformation',
@@ -13,6 +14,12 @@ const FamilyInfo = sequelize.define(
     isFatherAlive: {
       type: DataTypes.STRING,
       allowNull: false,
+      validate: {
+        isIn: {
+          args: [aliveOption],
+          msg: `Father alive must one of: ${aliveOption.join(', ')}`,
+        },
+      },
     },
     fatherOccupation: {
       type: DataTypes.STRING,
@@ -25,12 +32,14 @@ const FamilyInfo = sequelize.define(
     isMotherAlive: {
       type: DataTypes.STRING,
       allowNull: false,
+      validate: {
+        isIn: {
+          args: [aliveOption],
+          msg: `Mother alive must one of: ${aliveOption.join(', ')}`,
+        },
+      },
     },
     motherOccupation: {
-      type: DataTypes.STRING,
-      allowNull: false,
-    },
-    educationInstitute: {
       type: DataTypes.STRING,
       allowNull: false,
     },
