@@ -2,6 +2,12 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../db');
 const User = require('./user.model');
+const {
+  medium,
+  educationOptions,
+  categories,
+  resultOptions,
+} = require('../lib');
 
 const Education = sequelize.define(
   'Education',
@@ -9,10 +15,22 @@ const Education = sequelize.define(
     medium: {
       type: DataTypes.STRING,
       allowNull: false,
+      validate: {
+        isIn: {
+          args: [medium],
+          msg: `Education medium must be one of: ${medium.join(', ')}`,
+        },
+      },
     },
     qualification: {
       type: DataTypes.STRING,
       allowNull: false,
+      validate: {
+        isIn: {
+          args: [educationOptions],
+          msg: `Education medium must be one of: ${educationOptions.join(', ')}`,
+        },
+      },
     },
     submission: {
       type: DataTypes.STRING,
@@ -21,10 +39,22 @@ const Education = sequelize.define(
     category: {
       type: DataTypes.STRING,
       allowNull: false,
+      validate: {
+        isIn: {
+          args: [categories],
+          msg: `Categories must be one of: ${categories.join(', ')}`,
+        },
+      },
     },
     result: {
       type: DataTypes.STRING,
       allowNull: false,
+      validate: {
+        isIn: {
+          args: [resultOptions],
+          msg: `Result must be one of: ${resultOptions.join(', ')}`,
+        },
+      },
     },
     isDiplomaSubject: {
       type: DataTypes.STRING,
