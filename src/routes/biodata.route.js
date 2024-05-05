@@ -8,6 +8,15 @@ const { createEducation, updateEducation } = require('../controllers/education.c
 const { createFamilyInfo, updateFamilyInfo } = require('../controllers/familyInfo.controller');
 const { createLifeStyleInfo, updateLifeStyleInfo } = require('../controllers/lifeStyle.controller');
 const { createOccupation, updateOccupation } = require('../controllers/occupation.controller');
+
+const { createPartner, updatePartner } = require('../controllers/expectedPartner.controller');
+
+const {
+    createMarriageInfo,
+    updateMarriageInfo,
+} = require('../controllers/marriageInfo.controller');
+
+// const { createPartner, updatePartner } = require('../controllers/partner.controller');
 const { verifyToken } = require('../middleware/auth.middleware');
 const { upload } = require('../middleware/multer.middleware');
 
@@ -40,5 +49,13 @@ biodataRouter
 // Routes for handling occupation information
 biodataRouter.route('/occupation/create').post(verifyToken, createOccupation);
 biodataRouter.route('/occupation/update').put(verifyToken, updateOccupation);
+
+// Routes for handling marriage information
+biodataRouter.route('/marriage-info/create').post(verifyToken, createMarriageInfo);
+biodataRouter.route('/marriage-info/update').put(verifyToken, updateMarriageInfo);
+
+// Routes for handling partner information
+biodataRouter.route('/expected-partner/create').post(verifyToken, createPartner);
+biodataRouter.route('/expected-partner/update').put(verifyToken, updatePartner);
 
 module.exports = biodataRouter;
