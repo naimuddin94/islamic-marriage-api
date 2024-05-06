@@ -24,7 +24,6 @@ const Education = sequelize.define(
     },
     qualification: {
       type: DataTypes.STRING,
-      allowNull: false,
       validate: {
         isIn: {
           args: [educationOptions],
@@ -34,11 +33,9 @@ const Education = sequelize.define(
     },
     submission: {
       type: DataTypes.STRING,
-      allowNull: false,
     },
     category: {
       type: DataTypes.STRING,
-      allowNull: false,
       validate: {
         isIn: {
           args: [categories],
@@ -48,7 +45,6 @@ const Education = sequelize.define(
     },
     result: {
       type: DataTypes.STRING,
-      allowNull: false,
       validate: {
         isIn: {
           args: [resultOptions],
@@ -58,15 +54,12 @@ const Education = sequelize.define(
     },
     isDiplomaSubject: {
       type: DataTypes.STRING,
-      allowNull: false,
     },
     institution: {
       type: DataTypes.STRING,
-      allowNull: false,
     },
     passingYear: {
       type: DataTypes.STRING,
-      allowNull: false,
     },
     otherQualifications: {
       type: DataTypes.STRING,
