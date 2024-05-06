@@ -16,7 +16,9 @@ const {
     updateMarriageInfo,
 } = require('../controllers/marriageInfo.controller');
 
-// const { createPartner, updatePartner } = require('../controllers/partner.controller');
+const { createPledge, updatePledge } = require('../controllers/pledge.controller');
+
+const { createContact, updateContact } = require('../controllers/contact.controller');
 const { verifyToken } = require('../middleware/auth.middleware');
 const { upload } = require('../middleware/multer.middleware');
 
@@ -57,5 +59,13 @@ biodataRouter.route('/marriage-info/update').put(verifyToken, updateMarriageInfo
 // Routes for handling partner information
 biodataRouter.route('/expected-partner/create').post(verifyToken, createPartner);
 biodataRouter.route('/expected-partner/update').put(verifyToken, updatePartner);
+
+// Routes for handling pledge
+biodataRouter.route('/pledge/create').post(verifyToken, createPledge);
+biodataRouter.route('/pledge/update').put(verifyToken, updatePledge);
+
+// Routes for handling contact information
+biodataRouter.route('/contact/create').post(verifyToken, createContact);
+biodataRouter.route('/contact/update').put(verifyToken, updateContact);
 
 module.exports = biodataRouter;
