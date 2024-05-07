@@ -66,7 +66,29 @@ const updateOccupation = asyncHandler(async (req, res) => {
     return res.json(new ApiResponse(200, occupationToUpdate, 'Occupation updated successfully'));
 });
 
+// Get single occupation by primary key
+const getSingleOccupation = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    console.log(73, id);
+
+    // Fetch the address by its primary key
+    const partner = await Occupation.findByPk(id, {
+        attributes: {
+            exclude: ['password', 'createdAt', 'updatedAt', 'UserId'],
+        },
+    });
+
+    if (!partner) {
+        throw new ApiError(404, 'Occupation not found');
+    }
+
+    // Send the response
+    return res.status(200).json(new ApiResponse(200, partner, 'Occupation fetched successfully'));
+});
+
 module.exports = {
     createOccupation,
     updateOccupation,
+    getSingleOccupation,
 };
