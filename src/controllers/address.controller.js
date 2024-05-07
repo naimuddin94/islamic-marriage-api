@@ -75,4 +75,25 @@ const updateAddress = asyncHandler(async (req, res) => {
   );
 });
 
-module.exports = { createAddress, updateAddress };
+// Get single address by primary key
+const getSingleAddress = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  // Fetch the address by its primary key
+  const address = await Address.findByPk(id, {
+    attributes: {
+      exclude: ['password', 'createdAt', 'updatedAt', 'UserId'],
+    },
+  });
+
+  if (!address) {
+    throw new ApiError(404, 'Address not found');
+  }
+
+  // Send the response
+  return res
+    .status(200)
+    .json(new ApiResponse(200, address, 'Address fetched successfully'));
+});
+
+module.exports = { createAddress, updateAddress, getSingleAddress };
