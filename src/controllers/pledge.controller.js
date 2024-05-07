@@ -67,4 +67,23 @@ const updatePledge = asyncHandler(async (req, res) => {
   return res.json(new ApiResponse(200, pledge, 'Pledge updated successfully'));
 });
 
-module.exports = { createPledge, updatePledge };
+// Get single personal information by primary key
+const getSinglePledge = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    // Fetch the address by its primary key
+    const partner = await Pledge.findByPk(id, {
+        attributes: {
+            exclude: ['password', 'createdAt', 'updatedAt', 'UserId'],
+        },
+    });
+
+    if (!partner) {
+        throw new ApiError(404, 'Pledge not found');
+    }
+
+    // Send the response
+    return res.status(200).json(new ApiResponse(200, partner, 'Pledge information fetched successfully'));
+});
+
+module.exports = { createPledge, updatePledge, getSinglePledge };
