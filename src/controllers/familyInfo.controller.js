@@ -140,4 +140,27 @@ const updateFamilyInfo = asyncHandler(async (req, res) => {
   );
 });
 
-module.exports = { createFamilyInfo, updateFamilyInfo };
+// Get single family information by primary key
+const getSingleFamilyInfo = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    // Fetch the address by its primary key
+    const partner = await FamilyInfo.findByPk(id, {
+        attributes: {
+            exclude: ['password', 'createdAt', 'updatedAt', 'UserId'],
+        },
+    });
+
+    if (!partner) {
+        throw new ApiError(404, 'Family information not found');
+    }
+
+    // Send the response
+    return res
+      .status(200)
+      .json(
+        new ApiResponse(200, partner, 'Family information fetched successfully'),
+      );
+});
+
+module.exports = { createFamilyInfo, updateFamilyInfo, getSingleFamilyInfo };
