@@ -109,7 +109,29 @@ const updateMarriageInfo = asyncHandler(async (req, res) => {
     );
 });
 
+// Get single marriage information by primary key
+const getSingleMarriageInfo = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    // Fetch the address by its primary key
+    const partner = await MarriageInfo.findByPk(id, {
+        attributes: {
+            exclude: ['password', 'createdAt', 'updatedAt', 'UserId'],
+        },
+    });
+
+    if (!partner) {
+        throw new ApiError(404, 'Marriage information not found');
+    }
+
+    // Send the response
+    return res
+        .status(200)
+        .json(new ApiResponse(200, partner, 'Marriage information fetched successfully'));
+});
+
 module.exports = {
     createMarriageInfo,
     updateMarriageInfo,
+    getSingleMarriageInfo,
 };
