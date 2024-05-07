@@ -1,4 +1,5 @@
 /* eslint-disable prettier/prettier */
+/* eslint-disable no-param-reassign */
 const { Sequelize, DataTypes } = require('sequelize');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -14,23 +15,23 @@ const User = sequelize.define(
     },
     fullName: {
       type: DataTypes.STRING,
-      allowNull: {
-        args: false,
-        msg: 'Name is required.',
+      allowNull: false,
+      validate: {
+        notNull: {
+          msg: 'Name is required.',
+        },
       },
     },
     email: {
       type: DataTypes.STRING,
-      unique: {
-        msg: 'Email already exists',
-      },
-      allowNull: {
-        args: false,
-        msg: 'Email is required.',
-      },
+      unique: true,
+      allowNull: false,
       validate: {
         isEmail: {
           msg: 'Invalid email format',
+        },
+        notNull: {
+          msg: 'Email is required.',
         },
       },
     },
@@ -45,19 +46,21 @@ const User = sequelize.define(
     },
     mobileNumber: {
       type: DataTypes.STRING,
-      allowNull: {
-        args: false,
-        msg: 'Mobile number is required.',
-      },
-      unique: {
-        msg: 'Email already exists',
+      allowNull: false,
+      unique: true,
+      validate: {
+        notNull: {
+          msg: 'Mobile number is required.',
+        },
       },
     },
     password: {
       type: DataTypes.STRING,
-      allowNull: {
-        args: false,
-        msg: 'Password is required.',
+      allowNull: false,
+      validate: {
+        notNull: {
+          msg: 'Password is required.',
+        },
       },
     },
     refreshToken: {
@@ -83,6 +86,27 @@ const User = sequelize.define(
         },
       },
     },
+    isApproved: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: true,
+    },
+    visitedBiodata: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+    },
+    hasBeenSortListed: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+    },
+    sortListed: {
+      type: DataTypes.JSON,
+    },
+    ignoreList: {
+      type: DataTypes.JSON,
+    },
+    purchased: {
+      type: DataTypes.JSON,
+    },
   },
   {
     indexes: [
@@ -96,12 +120,10 @@ const User = sequelize.define(
       beforeSave: async (user) => {
         if (user.changed('password')) {
           const salt = await bcrypt.genSalt(10);
-          // eslint-disable-next-line no-param-reassign
           user.password = await bcrypt.hash(user.password, salt);
         }
 
         if (user.changed('email')) {
-          // eslint-disable-next-line no-param-reassign
           user.email = user.email.toLowerCase();
         }
       },
@@ -109,12 +131,24 @@ const User = sequelize.define(
   },
 );
 
-// create custom method for password checking
+User.belongsToMany(User, {
+    as: 'SortedListed',
+    through: 'SortListedUsers',
+    foreignKey: 'userId',
+});
+
+User.belongsToMany(User, {
+    as: 'IgnoreList',
+    through: 'IgnoreListedUsers',
+    foreignKey: 'userId',
+});
+
+// Custom method for password checking
 User.prototype.isPasswordCorrect = function (password) {
     return bcrypt.compareSync(password, this.password);
 };
 
-// create access token method
+// Custom method for generating access token
 User.prototype.generateAccessToken = function () {
     return jwt.sign(
         {
@@ -129,7 +163,7 @@ User.prototype.generateAccessToken = function () {
     );
 };
 
-// create access token method
+// Custom method for generating refresh token
 User.prototype.generateRefreshToken = function () {
     return jwt.sign(
         {
