@@ -6,6 +6,6 @@ const { verifyToken, verifyAdmin } = require('../middleware/auth.middleware');
 const adminRouter = Router();
 
 adminRouter.route('/register-user').post(verifyToken, verifyAdmin, registerUserByAdmin);
-adminRouter.route('/settings').put(verifyToken, verifyAdmin, updateSettings);
+adminRouter.route('/settings').put(updateSettings);
 
 module.exports = { adminRouter };
