@@ -96,4 +96,23 @@ const updatePartner = asyncHandler(async (req, res) => {
     return res.json(new ApiResponse(200, partner, 'Partner updated successfully'));
 });
 
-module.exports = { createPartner, updatePartner };
+// Get single expected partner by primary key
+const getSinglePartner = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    // Fetch the address by its primary key
+    const partner = await ExpectedPartner.findByPk(id, {
+        attributes: {
+            exclude: ['password', 'createdAt', 'updatedAt', 'UserId'],
+        },
+    });
+
+    if (!partner) {
+        throw new ApiError(404, 'Partner not found');
+    }
+
+    // Send the response
+    return res.status(200).json(new ApiResponse(200, partner, 'Partner fetched successfully'));
+});
+
+module.exports = { createPartner, updatePartner, getSinglePartner };
