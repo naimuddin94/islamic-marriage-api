@@ -2,23 +2,49 @@ const { Router } = require('express');
 const {
     createPersonalInfo,
     updatePersonalInfo,
+    getSinglePersonalInfo,
 } = require('../controllers/personalInfo.controller');
-const { createAddress, updateAddress } = require('../controllers/address.controller');
+const {
+    createAddress,
+    updateAddress,
+    getSingleAddress,
+} = require('../controllers/address.controller');
 const { createEducation, updateEducation } = require('../controllers/education.controller');
-const { createFamilyInfo, updateFamilyInfo } = require('../controllers/familyInfo.controller');
-const { createLifeStyleInfo, updateLifeStyleInfo } = require('../controllers/lifeStyle.controller');
-const { createOccupation, updateOccupation } = require('../controllers/occupation.controller');
+const {
+    createFamilyInfo,
+    updateFamilyInfo,
+    getSingleFamilyInfo,
+} = require('../controllers/familyInfo.controller');
+const {
+    createLifeStyleInfo,
+    updateLifeStyleInfo,
+    getSingleLifestyle,
+} = require('../controllers/lifeStyle.controller');
+const {
+    createOccupation,
+    updateOccupation,
+    getSingleOccupation,
+} = require('../controllers/occupation.controller');
 
-const { createPartner, updatePartner } = require('../controllers/expectedPartner.controller');
+const {
+    createPartner,
+    updatePartner,
+    getSinglePartner,
+} = require('../controllers/expectedPartner.controller');
 
 const {
     createMarriageInfo,
     updateMarriageInfo,
+    getSingleMarriageInfo,
 } = require('../controllers/marriageInfo.controller');
 
-const { createPledge, updatePledge } = require('../controllers/pledge.controller');
+const { createPledge, updatePledge, getSinglePledge } = require('../controllers/pledge.controller');
 
-const { createContact, updateContact } = require('../controllers/contact.controller');
+const {
+    createContact,
+    updateContact,
+    getSingleContact,
+} = require('../controllers/contact.controller');
 
 const { getAllBiodata, getSingleBiodata } = require('../controllers/biodata.controller');
 
@@ -74,5 +100,16 @@ biodataRouter.route('/contact/update').put(verifyToken, updateContact);
 // all biodata related routes
 biodataRouter.route('/all').get(getAllBiodata);
 biodataRouter.route('/single/:userId').get(getSingleBiodata);
+
+// Fetched single data routes
+biodataRouter.route('/address/fetch/:id').get(getSingleAddress);
+biodataRouter.route('/contact/fetch/:id').get(getSingleContact);
+biodataRouter.route('/partner/fetch/:id').get(getSinglePartner);
+biodataRouter.route('/family-info/fetch/:id').get(getSingleFamilyInfo);
+biodataRouter.route('/lifestyle/fetch/:id').get(getSingleLifestyle);
+biodataRouter.route('/marriage-info/fetch/:id').get(getSingleMarriageInfo);
+biodataRouter.route('/occupation/fetch/:id').get(getSingleOccupation);
+biodataRouter.route('/personal-info/fetch/:id').get(getSinglePersonalInfo);
+biodataRouter.route('/pledge/fetch/:id').get(getSinglePledge);
 
 module.exports = biodataRouter;
