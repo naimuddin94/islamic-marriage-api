@@ -19,6 +19,9 @@ const {
 const { createPledge, updatePledge } = require('../controllers/pledge.controller');
 
 const { createContact, updateContact } = require('../controllers/contact.controller');
+
+const { getAllBiodata, getSingleBiodata } = require('../controllers/biodata.controller');
+
 const { verifyToken } = require('../middleware/auth.middleware');
 const { upload } = require('../middleware/multer.middleware');
 
@@ -67,5 +70,9 @@ biodataRouter.route('/pledge/update').put(verifyToken, updatePledge);
 // Routes for handling contact information
 biodataRouter.route('/contact/create').post(verifyToken, createContact);
 biodataRouter.route('/contact/update').put(verifyToken, updateContact);
+
+// all biodata related routes
+biodataRouter.route('/all').get(getAllBiodata);
+biodataRouter.route('/single/:userId').get(getSingleBiodata);
 
 module.exports = biodataRouter;
