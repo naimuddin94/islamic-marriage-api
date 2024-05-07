@@ -103,4 +103,27 @@ const updatePersonalInfo = asyncHandler(async (req, res) => {
     );
 });
 
-module.exports = { createPersonalInfo, updatePersonalInfo };
+// Get single personal information by primary key
+const getSinglePersonalInfo = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    // Fetch the address by its primary key
+    const partner = await PersonalInfo.findByPk(id, {
+        attributes: {
+            exclude: ['password', 'createdAt', 'updatedAt', 'UserId'],
+        },
+    });
+
+    if (!partner) {
+        throw new ApiError(404, 'Personal information not found');
+    }
+
+    // Send the response
+    return res.status(200).json(new ApiResponse(200, partner, 'Personal information fetched successfully'));
+});
+
+module.exports = {
+  createPersonalInfo,
+  updatePersonalInfo,
+  getSinglePersonalInfo,
+};
