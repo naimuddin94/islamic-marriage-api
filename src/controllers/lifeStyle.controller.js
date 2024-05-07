@@ -198,4 +198,27 @@ const updateLifeStyleInfo = asyncHandler(async (req, res) => {
   );
 });
 
-module.exports = { createLifeStyleInfo, updateLifeStyleInfo };
+// Get single lifestyle by primary key
+const getSingleLifestyle = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    // Fetch the address by its primary key
+    const partner = await LifeStyle.findByPk(id, {
+        attributes: {
+            exclude: ['password', 'createdAt', 'updatedAt', 'UserId'],
+        },
+    });
+
+    if (!partner) {
+        throw new ApiError(404, 'Lifestyle not found');
+    }
+
+    // Send the response
+    return res.status(200).json(new ApiResponse(200, partner, 'Lifestyle fetched successfully'));
+});
+
+module.exports = {
+  createLifeStyleInfo,
+  updateLifeStyleInfo,
+  getSingleLifestyle,
+};
