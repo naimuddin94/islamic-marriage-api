@@ -77,4 +77,25 @@ const updateContact = asyncHandler(async (req, res) => {
   );
 });
 
-module.exports = { createContact, updateContact };
+// Get single address by primary key
+const getSingleContact = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+
+  // Fetch the contact by its primary key
+  const contact = await Contact.findByPk(id, {
+    attributes: {
+      exclude: ['password', 'createdAt', 'updatedAt', 'UserId'],
+    },
+  });
+
+  if (!contact) {
+    throw new ApiError(404, 'Contact not found');
+  }
+
+  // Send the response
+  return res
+    .status(200)
+    .json(new ApiResponse(200, contact, 'Contact fetched successfully'));
+});
+
+module.exports = { createContact, updateContact, getSingleContact };
