@@ -110,4 +110,23 @@ const updateEducation = asyncHandler(async (req, res) => {
     return res.json(new ApiResponse(200, education, 'Education record updated successfully'));
 });
 
-module.exports = { createEducation, updateEducation };
+// Get single education by primary key
+const getSingleEducation = asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    // Fetch the contact by its primary key
+    const contact = await Education.findByPk(id, {
+        attributes: {
+            exclude: ['password', 'createdAt', 'updatedAt', 'UserId'],
+        },
+    });
+
+    if (!contact) {
+        throw new ApiError(404, 'Education not found');
+    }
+
+    // Send the response
+    return res.status(200).json(new ApiResponse(200, contact, 'Education fetched successfully'));
+});
+
+module.exports = { createEducation, updateEducation, getSingleEducation };
