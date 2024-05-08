@@ -99,13 +99,28 @@ const User = sequelize.define(
       defaultValue: 0,
     },
     sortListed: {
-      type: DataTypes.JSON,
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      defaultValue: [],
+      references: {
+        model: 'User',
+        key: 'id',
+      },
     },
     ignoreList: {
-      type: DataTypes.JSON,
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      defaultValue: [],
+      references: {
+        model: 'User',
+        key: 'id',
+      },
     },
     purchased: {
-      type: DataTypes.JSON,
+      type: DataTypes.ARRAY(DataTypes.STRING),
+      defaultValue: [],
+    },
+    connection: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
     },
   },
   {
