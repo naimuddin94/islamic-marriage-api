@@ -85,7 +85,9 @@ const registerUser = asyncHandler(async (req, res) => {
 
   return res
     .status(201)
-    .json(new ApiResponse(201, mobileNumber, 'OTP send on mobile successfully'));
+    .json(
+      new ApiResponse(201, mobileNumber, 'OTP send on mobile successfully'),
+    );
 });
 
 // create a new user by admin with role
@@ -302,11 +304,11 @@ const sendOTP = asyncHandler(async (req, res) => {
 const verifyOTP = asyncHandler(async (req, res) => {
   const { mobileNumber, otp } = trimObject(req.body);
 
-   const errors = emptyValidator(req.body, ['mobileNumber', 'otp']);
+  const errors = emptyValidator(req.body, ['mobileNumber', 'otp']);
 
-   if (errors.length) {
-     throw new ApiError(400, errors.join(', '), errors);
-   }
+  if (errors.length) {
+    throw new ApiError(400, errors.join(', '), errors);
+  }
 
   const user = await User.findOne({ where: { mobileNumber } });
 
@@ -348,11 +350,11 @@ const verifyOTP = asyncHandler(async (req, res) => {
 const changePassword = asyncHandler(async (req, res) => {
   const { oldPassword, newPassword } = trimObject(req.body);
 
-   const errors = emptyValidator(req.body, ['oldPassword', 'newPassword']);
+  const errors = emptyValidator(req.body, ['oldPassword', 'newPassword']);
 
-   if (errors.length) {
-     throw new ApiError(400, errors.join(', '), errors);
-   }
+  if (errors.length) {
+    throw new ApiError(400, errors.join(', '), errors);
+  }
 
   const user = await User.findByPk(req.user?.id);
 
@@ -369,7 +371,9 @@ const changePassword = asyncHandler(async (req, res) => {
   user.password = newPassword;
   await user.save();
 
-  return res.status(200).json(new ApiResponse(200, {}, 'Password changed successfully'));
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, 'Password changed successfully'));
 });
 
 // change fullname
@@ -378,11 +382,11 @@ const changeFullName = asyncHandler(async (req, res) => {
 
   console.log(fullName);
 
-   const errors = emptyValidator(req.body, ['fullName']);
+  const errors = emptyValidator(req.body, ['fullName']);
 
-   if (errors.length) {
-     throw new ApiError(400, errors.join(', '), errors);
-   }
+  if (errors.length) {
+    throw new ApiError(400, errors.join(', '), errors);
+  }
 
   const user = await User.findByPk(req.user?.id);
 
@@ -416,15 +420,15 @@ const forgetPassword = asyncHandler(async (req, res) => {
     throw new ApiError(400, errors.join(', '), errors);
   }
 
-   const user = await User.findOne({
-     where: {
-       [Op.or]: [{ email: identity.toLowerCase() }, { mobileNumber: identity }],
-     },
-   });
+  const user = await User.findOne({
+    where: {
+      [Op.or]: [{ email: identity.toLowerCase() }, { mobileNumber: identity }],
+    },
+  });
 
-   if (!user) {
-     throw new ApiError(404, 'User not found');
-   }
+  if (!user) {
+    throw new ApiError(404, 'User not found');
+  }
 
   const otp = otpGenerator.generate(6, {
     upperCaseAlphabets: false,
@@ -444,13 +448,20 @@ const forgetPassword = asyncHandler(async (req, res) => {
 
   await user.save({ validate: false });
 
-  return res.status(200).json(new ApiResponse(200, {}, 'OTP send successfully'));
+  return res
+    .status(200)
+    .json(new ApiResponse(200, {}, 'OTP send successfully'));
 });
 
+// verify OTP for forget password
 const verifyOTPForResetPassword = asyncHandler(async (req, res) => {
   const { otp, newPassword, mobileNumber } = trimObject(req.body);
 
-  const errors = emptyValidator(req.body, ['otp', 'newPassword', 'mobileNumber']);
+  const errors = emptyValidator(req.body, [
+    'otp',
+    'newPassword',
+    'mobileNumber',
+  ]);
 
   if (errors.length) {
     throw new ApiError(400, errors.join(', '), errors);
@@ -491,6 +502,143 @@ const verifyOTPForResetPassword = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, response, 'Password changed successfully'));
 });
 
+// visited biodata increase
+const visitedBiodata = asyncHandler(async (req, res) => {
+  const user = await User.findByPk(req.user?.id);
+
+  if (!user) {
+    throw new ApiError(404, 'User not found');
+  }
+
+  user.visitedBiodata += 1;
+
+  await user.save({ validate: false });
+
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user.visitedBiodata, 'Successfully increase visited'));
+});
+
+// sortListed biodata
+const sortListed = asyncHandler(async (req, res) => {
+  const { userId } = req.body;
+
+  if (!userId) {
+    throw new ApiError(400, 'User id is required');
+  }
+  const user = await User.findByPk(req.user?.id);
+
+  if (!user) {
+    throw new ApiError(404, 'User not found');
+  }
+
+  const isExist = user.sortListed.find((element) => element === userId);
+
+  if (isExist) {
+    throw new ApiError(400, 'Already sort listed this biodata');
+  }
+
+  user.sortListed = [...user.sortListed, userId];
+
+  await user.save({ validate: false });
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, user.sortListed, 'Successfully added to sort list'),
+    );
+});
+
+// remove user id from sortListed biodata
+const removeIdFromSortList = asyncHandler(async (req, res) => {
+  const { userId } = req.body;
+
+  if (!userId) {
+    throw new ApiError(400, 'User id is required');
+  }
+  const user = await User.findByPk(req.user?.id);
+
+  if (!user) {
+    throw new ApiError(404, 'User not found');
+  }
+
+   const isExist = user.sortListed.find((element) => element === userId);
+
+   if (!isExist) {
+     throw new ApiError(404, 'This biodata not found your sort list');
+   }
+
+  user.sortListed = user.sortListed.filter((element) => element !== userId);
+
+  await user.save({ validate: false });
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, user.sortListed, 'Remove successfully from the list'),
+    );
+});
+
+// sortListed biodata
+const ignoreList = asyncHandler(async (req, res) => {
+  const { userId } = req.body;
+
+  if (!userId) {
+    throw new ApiError(400, 'User id is required');
+  }
+  const user = await User.findByPk(req.user?.id);
+
+  if (!user) {
+    throw new ApiError(404, 'User not found');
+  }
+
+  const isExist = user.ignoreList.find((element) => element === userId);
+
+  if (isExist) {
+    throw new ApiError(400, 'Already ignore listed this biodata');
+  }
+
+  user.ignoreList = [...user.ignoreList, userId];
+
+  await user.save({ validate: false });
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, user.ignoreList, 'Successfully added to ignore list'),
+    );
+});
+
+// remove user id from sortListed biodata
+const removeIdFromIgnoreList = asyncHandler(async (req, res) => {
+  const { userId } = req.body;
+
+  if (!userId) {
+    throw new ApiError(400, 'User id is required');
+  }
+  const user = await User.findByPk(req.user?.id);
+
+  if (!user) {
+    throw new ApiError(404, 'User not found');
+  }
+
+  const isExist = user.ignoreList.find((element) => element === userId);
+
+  if (!isExist) {
+    throw new ApiError(404, 'This biodata not found your ignore list');
+  }
+
+  user.ignoreList = user.ignoreList.filter((element) => element !== userId);
+
+  await user.save({ validate: false });
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, user.ignoreList, 'Remove successfully from the list'),
+    );
+});
+
 module.exports = {
   registerUser,
   registerUserByAdmin,
@@ -503,4 +651,9 @@ module.exports = {
   changeFullName,
   forgetPassword,
   verifyOTPForResetPassword,
+  visitedBiodata,
+  sortListed,
+  removeIdFromSortList,
+  ignoreList,
+  removeIdFromIgnoreList,
 };
