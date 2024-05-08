@@ -526,6 +526,15 @@ const sortListed = asyncHandler(async (req, res) => {
   if (!userId) {
     throw new ApiError(400, 'User id is required');
   }
+
+  const sortedUser = await User.findByPk(userId);
+
+  if (!sortedUser) {
+    throw new ApiError(404, 'User id is no valid');
+  }
+
+  sortedUser.hasBeenSortListed += 1;
+
   const user = await User.findByPk(req.user?.id);
 
   if (!user) {
@@ -541,6 +550,7 @@ const sortListed = asyncHandler(async (req, res) => {
   user.sortListed = [...user.sortListed, userId];
 
   await user.save({ validate: false });
+  await sortedUser.save({ validate: false });
 
   return res
     .status(200)
@@ -556,6 +566,15 @@ const removeIdFromSortList = asyncHandler(async (req, res) => {
   if (!userId) {
     throw new ApiError(400, 'User id is required');
   }
+
+  const sortedUser = await User.findByPk(userId);
+
+  if (!sortedUser) {
+    throw new ApiError(404, 'User id is no valid');
+  }
+
+  sortedUser.hasBeenSortListed -= 1;
+
   const user = await User.findByPk(req.user?.id);
 
   if (!user) {
@@ -571,6 +590,7 @@ const removeIdFromSortList = asyncHandler(async (req, res) => {
   user.sortListed = user.sortListed.filter((element) => element !== userId);
 
   await user.save({ validate: false });
+  await sortedUser.save({ validate: false });
 
   return res
     .status(200)
