@@ -99,28 +99,24 @@ const User = sequelize.define(
       defaultValue: 0,
     },
     sortListed: {
-      type: DataTypes.ARRAY(DataTypes.STRING),
+      type: DataTypes.JSON,
       defaultValue: [],
-      references: {
-        model: 'User',
-        key: 'id',
-      },
     },
     ignoreList: {
-      type: DataTypes.ARRAY(DataTypes.STRING),
+      type: DataTypes.JSON,
       defaultValue: [],
-      references: {
-        model: 'User',
-        key: 'id',
-      },
     },
     purchased: {
-      type: DataTypes.ARRAY(DataTypes.STRING),
+      type: DataTypes.JSON,
       defaultValue: [],
     },
     connection: {
       type: DataTypes.INTEGER,
       defaultValue: 0,
+    },
+    isSubmitToVerify: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
     },
   },
   {
@@ -145,18 +141,6 @@ const User = sequelize.define(
     },
   },
 );
-
-User.belongsToMany(User, {
-    as: 'SortedListed',
-    through: 'SortListedUsers',
-    foreignKey: 'userId',
-});
-
-User.belongsToMany(User, {
-    as: 'IgnoreList',
-    through: 'IgnoreListedUsers',
-    foreignKey: 'userId',
-});
 
 // Custom method for password checking
 User.prototype.isPasswordCorrect = function (password) {
