@@ -450,7 +450,7 @@ const forgetPassword = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, {}, 'OTP send successfully'));
+    .json(new ApiResponse(200, identity, 'OTP send successfully'));
 });
 
 // verify OTP for forget password
@@ -516,7 +516,9 @@ const visitedBiodata = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, user.visitedBiodata, 'Successfully increase visited'));
+    .json(
+      new ApiResponse(200, user.visitedBiodata, 'Successfully increase visited'),
+    );
 });
 
 // sortListed biodata
@@ -581,11 +583,11 @@ const removeIdFromSortList = asyncHandler(async (req, res) => {
     throw new ApiError(404, 'User not found');
   }
 
-   const isExist = user.sortListed.find((element) => element === userId);
+  const isExist = user.sortListed.find((element) => element === userId);
 
-   if (!isExist) {
-     throw new ApiError(404, 'This biodata not found your sort list');
-   }
+  if (!isExist) {
+    throw new ApiError(404, 'This biodata not found your sort list');
+  }
 
   user.sortListed = user.sortListed.filter((element) => element !== userId);
 
@@ -659,6 +661,25 @@ const removeIdFromIgnoreList = asyncHandler(async (req, res) => {
     );
 });
 
+// submit to biodata to admin
+const submitBiodata = asyncHandler(async (req, res) => {
+  const user = await User.findByPk(req.user?.id);
+
+  if (!user) {
+    throw new ApiError(404, 'User not found');
+  }
+
+  user.isSubmitToVerify = true;
+
+  await user.save({ validate: false });
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, {}, 'Send biodata to verification successfully'),
+    );
+});
+
 module.exports = {
   registerUser,
   registerUserByAdmin,
@@ -676,4 +697,5 @@ module.exports = {
   removeIdFromSortList,
   ignoreList,
   removeIdFromIgnoreList,
+  submitBiodata,
 };
