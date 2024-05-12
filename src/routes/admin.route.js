@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const { registerUserByAdmin } = require('../controllers/user.controller');
 const { updateSettings } = require('../controllers/setting.controller');
-// const { verifyToken, verifyAdmin } = require('../middleware/auth.middleware');
+const { verifyToken, verifyAdmin } = require('../middleware/auth.middleware');
 
 const adminRouter = Router();
 
