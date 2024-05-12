@@ -195,7 +195,7 @@ const login = asyncHandler(async (req, res) => {
         new ApiResponse(
           400,
           existsUser.mobileNumber,
-          'Mobile number is not verified send otp on your mobile please verify with it',
+          'Please verify your mobile number by sending the OTP that will be sent to your device.',
         ),
       );
   }
