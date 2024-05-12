@@ -172,7 +172,32 @@ const login = asyncHandler(async (req, res) => {
   }
 
   if (!existsUser.isVerified) {
-    throw new ApiError(400, 'Mobile number not verified');
+    const otp = otpGenerator.generate(6, {
+      upperCaseAlphabets: false,
+      specialChars: false,
+      lowerCaseAlphabets: false,
+    });
+
+    const otpExpiry = new Date();
+    otpExpiry.setMinutes(otpExpiry.getMinutes() + 1);
+
+    const message = `Your Islamic Marriage verify OTP is: ${otp}`;
+
+    await sendSMS(message, existsUser.mobileNumber);
+
+    existsUser.otp = otp;
+    existsUser.otpExpiry = otpExpiry;
+    existsUser.save({ validate: false });
+
+    return res
+      .status(400)
+      .json(
+        new ApiResponse(
+          400,
+          existsUser.mobileNumber,
+          'Mobile number is not verified send otp on your mobile please verify with it',
+        ),
+      );
   }
 
   const isValidPassword = existsUser.isPasswordCorrect(password);
