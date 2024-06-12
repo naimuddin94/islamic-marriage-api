@@ -46,7 +46,7 @@ const {
     getSingleContact,
 } = require('../controllers/contact.controller');
 
-const { getAllBiodata, getSingleBiodata } = require('../controllers/biodata.controller');
+const { getSingleBiodata, getAllBiodata } = require('../controllers/biodata.controller');
 
 const { verifyToken } = require('../middleware/auth.middleware');
 const { upload } = require('../middleware/multer.middleware');

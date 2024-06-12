@@ -84,6 +84,10 @@ const Partner = sequelize.define(
   {
     indexes: [
       {
+        unique: false,
+        fields: ['district'],
+      },
+      {
         unique: true,
         fields: ['UserId'],
       },

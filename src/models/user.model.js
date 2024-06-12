@@ -123,7 +123,15 @@ const User = sequelize.define(
     indexes: [
       {
         unique: true,
-        fields: ['email', 'mobileNumber'],
+        fields: ['mobileNumber'],
+      },
+      {
+        unique: true,
+        fields: ['email'],
+      },
+      {
+        unique: false,
+        fields: ['gender'],
       },
     ],
     hooks: {

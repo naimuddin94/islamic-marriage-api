@@ -16,14 +16,14 @@ const Address = sequelize.define(
     },
     currentAddress: {
       type: DataTypes.STRING,
-        allowNull: false,
-        set(value) {
-            if (this.isSameCurrentAddress) {
-              this.setDataValue('currentAddress', this.permanentAddress);
-            } else {
-              this.setDataValue('currentAddress', value);
-            }
-        },
+      allowNull: false,
+      set(value) {
+        if (this.isSameCurrentAddress) {
+          this.setDataValue('currentAddress', this.permanentAddress);
+        } else {
+          this.setDataValue('currentAddress', value);
+        }
+      },
     },
     growUp: {
       type: DataTypes.STRING,
@@ -32,6 +32,10 @@ const Address = sequelize.define(
   },
   {
     indexes: [
+      {
+        unique: false,
+        fields: ['permanentAddress'],
+      },
       {
         unique: true,
         fields: ['UserId'],

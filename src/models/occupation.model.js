@@ -29,6 +29,10 @@ const Occupation = sequelize.define(
   {
     indexes: [
       {
+        unique: false,
+        fields: ['occupation'],
+      },
+      {
         unique: true,
         fields: ['UserId'],
       },

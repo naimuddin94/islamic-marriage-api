@@ -45,7 +45,7 @@ const PersonalInfo = sequelize.define(
       validate: {
         isIn: {
           args: [heightArray],
-          msg: `Marital status must be one of: ${heightArray.join(', ')}`,
+          msg: `Height must be one of: ${heightArray.join(', ')}`,
         },
       },
     },
@@ -88,6 +88,14 @@ const PersonalInfo = sequelize.define(
   },
   {
     indexes: [
+      {
+        unique: false,
+        fields: ['typeOfBiodata'],
+      },
+      {
+        unique: false,
+        fields: ['maritalStatus'],
+      },
       {
         unique: true,
         fields: ['UserId'],
