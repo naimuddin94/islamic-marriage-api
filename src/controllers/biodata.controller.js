@@ -21,6 +21,8 @@ const { ApiError, ApiResponse, asyncHandler } = require('../utils');
 const getAllBiodata = asyncHandler(async (req, res) => {
   const { offset, limit } = req.query;
 
+  console.log(24, { offset, limit });
+
   // Fetch all users along with their associated biodata information
   const { count, rows } = await User.findAndCountAll({
     include: [
